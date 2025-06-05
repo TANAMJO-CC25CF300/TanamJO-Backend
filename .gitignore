@@ -1,0 +1,48 @@
+# Node.js
+node_modules/
+npm-debug.log
+yarn-debug.log
+yarn-error.log
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# Logs
+logs/
+*.log
+*.log.*
+
+# Operating system files
+.DS_Store
+Thumbs.db
+
+# IDE or Editor files
+.vscode/
+.idea/
+*.sublime-project
+*.sublime-workspace
+
+# Hapi.js specific
+hapi.log
+
+# Coverage directory used by tools like istanbul or nyc
+coverage/
+
+# Build or distribution files
+dist/
+build/
+
+# Temporary files
+*.tmp
+*.swp
+*.bak
+*.orig
+
+# .eslintcache
+.eslintcache
+
+# Miscellaneous files
+*.tgz
+*.gz
