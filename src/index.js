@@ -1,4 +1,4 @@
-const PredictHandler = require("./handler");
+const PredictHandler = require("./PredictHandler");
 const routes = require("./routes");
 
 module.exports = {
