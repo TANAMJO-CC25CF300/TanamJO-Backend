@@ -24,6 +24,8 @@ const init = async () => {
   const authService = new AuthService();
   const authHandler = new AuthHandler(authService);
 
+  // server.route(AuthRoutes(authHandler));
+
   // Register plugin predicts (model image prediction)
   await server.register([
   {

@@ -5,7 +5,11 @@ require('dotenv').config();
 
 class AuthService {
   async register(email, password) {
-    const checkUser = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    // Perbaikan: pakai "user" dengan tanda kutip
+    const checkUser = await pool.query(
+      'SELECT * FROM "user" WHERE email = $1',
+      [email]
+    );
 
     if (checkUser.rows.length > 0) {
       throw new Error('EMAIL_EXISTS');
@@ -14,7 +18,7 @@ class AuthService {
     const hashedPassword = await bcrypt.hash(password, 10);
 
     const result = await pool.query(
-      'INSERT INTO users (email, password) VALUES ($1, $2) RETURNING id, email',
+      'INSERT INTO "user" (email, password) VALUES ($1, $2) RETURNING id, email',
       [email, hashedPassword]
     );
 
@@ -22,7 +26,12 @@ class AuthService {
   }
 
   async login(email, password) {
-    const result = await pool.query('SELECT * FROM users WHERE email = $1', [email]);
+    // Perbaikan: pakai "user" dengan tanda kutip
+    const result = await pool.query(
+      'SELECT * FROM "user" WHERE email = $1',
+      [email]
+    );
+
     const user = result.rows[0];
 
     if (!user) {
