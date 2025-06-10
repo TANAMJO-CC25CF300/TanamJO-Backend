@@ -1,4 +1,4 @@
-const tf = require("@tensorflow/tfjs");
+const tf = require("@tensorflow/tfjs-node");
 
 class PredictService {
   async predictImage(photo) {
@@ -12,6 +12,8 @@ class PredictService {
 
     const image = Buffer.concat(buffers);
 
+    console.log(image);
+
     const tensor = tf.node
       .decodeImage(image)
       .resizeNearestNeighbor([224, 224])
@@ -24,9 +26,16 @@ class PredictService {
     const label = tf.argMax(predict, 1).dataSync()[0];
 
     const diseaseLabels = [
-      "Melanocytic nevus",
-      "Squamous cell carcinoma",
-      "Vascular lesion",
+      "Tomato Spider mites",
+      "Tomato Two spotted spider mite",
+      "Tomato Leaf Mold",
+      "Tomato Early blight",
+      "Tomato Late blight",
+      "Tomato Septoria leaf spot",
+      "Tomato Bacterial spot",
+      "Tomato Target Spot",
+      "Tomato Healthy",
+      "Tomato Tomato mosaic virus",
     ];
     const diseaseLabel = diseaseLabels[label];
 

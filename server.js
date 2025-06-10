@@ -1,7 +1,7 @@
 const Hapi = require("@hapi/hapi");
 require("dotenv").config();
 
-const predict = require("./src");
+const predict = require("./src/index");
 const PredictService = require("./src/service");
 
 const init = async () => {

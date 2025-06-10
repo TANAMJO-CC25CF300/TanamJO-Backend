@@ -5,9 +5,10 @@ const routes = (handler) => [
     handler: handler.getPredictResult,
     options: {
       payload: {
-        allow: "multipart/form-data",
-        multipart: true,
+        maxBytes: 5242880, // 5MB
         output: "stream",
+        parse: true,
+        multipart: true,
       },
     },
   },
