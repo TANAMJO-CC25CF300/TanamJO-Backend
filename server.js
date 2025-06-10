@@ -10,6 +10,11 @@ const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT,
     host: "localhost",
+    routes: {
+      cors: {
+        origin: ["*"],
+      },
+    },
   });
 
   await server.register([
