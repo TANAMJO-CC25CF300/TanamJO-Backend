@@ -3,7 +3,7 @@ const tf = require("@tensorflow/tfjs-node");
 class PredictService {
   async predictImage(photo) {
     const modelPath = "file://model/model.json";
-    const model = await tf.loadLayersModel(modelPath);
+    const model = await tf.loadGraphModel(modelPath);
     console.log("photo:", photo);
     console.log("photo type:", typeof photo);
     let imageBuffer;
@@ -32,21 +32,24 @@ class PredictService {
       .expandDims()
       .toFloat();
 
-    const predict = await model.predict(tensor);
-    const score = await predict.data();
+    const predict = await model.executeAsync(tensor);
+    const outputTensor = Array.isArray(predict) ? predict[0] : predict;
+    const score = await outputTensor.data();
     const confidenceScore = Math.max(...score);
-    const label = tf.argMax(predict, 1).dataSync()[0];
+    const label = score.indexOf(confidenceScore);
 
     const diseaseLabels = [
-      "Tomato Spider mites Two spotted spider mite",
-      "Tomato Tomato mosaic virus ",
-      "Tomato Leaf Mold",
-      "Tomato Early blight",
-      "Tomato Late blight",
-      "Tomato Septoria leaf spot",
-      "Tomato Bacterial spot",
-      "Tomato Target Spot",
-      "Tomato Healthy",
+      "Bacterial_spot",
+      "Early_blight",
+      "Late_blight",
+      "Leaf_Mold",
+      "Septoria_leaf_spot",
+      "Spider_mites Two-spotted_spider_mite",
+      "Target_Spot",
+      "Tomato_Yellow_Leaf_Curl_Virus",
+      "Tomato_mosaic_virus",
+      "healthy",
+      "powdery_mildew",
     ];
     const diseaseLabel = diseaseLabels[label];
 
