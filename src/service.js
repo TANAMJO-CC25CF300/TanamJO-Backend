@@ -4,18 +4,30 @@ class PredictService {
   async predictImage(photo) {
     const modelPath = "file://model/model.json";
     const model = await tf.loadLayersModel(modelPath);
-    const buffers = [];
-
-    for await (const data of photo) {
-      buffers.push(data);
+    console.log("photo:", photo);
+    console.log("photo type:", typeof photo);
+    let imageBuffer;
+    if (photo && photo._data) {
+      imageBuffer = photo._data;
+      console.log(
+        "Photo is a Readable Stream with _data Buffer, using _data as Buffer"
+      );
+    } else if (Buffer.isBuffer(photo)) {
+      imageBuffer = photo;
+      console.log("Photo is a Buffer");
+    } else {
+      const buffers = [];
+      for await (const data of photo) {
+        buffers.push(data);
+      }
+      imageBuffer = Buffer.concat(buffers);
+      console.log("Photo is a Stream, converted to Buffer");
     }
 
-    const image = Buffer.concat(buffers);
-
-    console.log(image);
+    console.log(imageBuffer);
 
     const tensor = tf.node
-      .decodeImage(image)
+      .decodeImage(imageBuffer, 3)
       .resizeNearestNeighbor([224, 224])
       .expandDims()
       .toFloat();
@@ -26,8 +38,8 @@ class PredictService {
     const label = tf.argMax(predict, 1).dataSync()[0];
 
     const diseaseLabels = [
-      "Tomato Spider mites",
-      "Tomato Two spotted spider mite",
+      "Tomato Spider mites Two spotted spider mite",
+      "Tomato Tomato mosaic virus ",
       "Tomato Leaf Mold",
       "Tomato Early blight",
       "Tomato Late blight",
@@ -35,7 +47,6 @@ class PredictService {
       "Tomato Bacterial spot",
       "Tomato Target Spot",
       "Tomato Healthy",
-      "Tomato Tomato mosaic virus",
     ];
     const diseaseLabel = diseaseLabels[label];
 

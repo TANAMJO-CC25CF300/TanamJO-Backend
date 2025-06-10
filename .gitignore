@@ -9,6 +9,9 @@ logs/
 *.log
 *.log.*
 
+#env
+.env
+.env.local
 # Operating system files
 .DS_Store
 Thumbs.db
