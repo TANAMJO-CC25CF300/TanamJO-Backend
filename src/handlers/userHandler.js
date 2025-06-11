@@ -32,7 +32,7 @@ class UserHandler {
       console.log('Fetching user with ID:', id);
       
       const result = await pool.query(
-        'SELECT id, name, email, gender FROM "user" WHERE id = $1',
+        'SELECT u.id, u.name, u.email, u.gender, u.poin, u.user_level_id, ul.name as level_name, ul.minimum_poin FROM "user" u JOIN user_level ul ON u.user_level_id = ul.id WHERE u.id = $1',
         [id]
       );
 
