@@ -53,7 +53,18 @@ class PredictService {
     ];
     const diseaseLabel = diseaseLabels[label];
 
+    // Cleanup
+    tf.dispose([tensor, predict, outputTensor]);
+
     return { confidenceScore, diseaseLabel };
+  }
+  catch(error) {
+    console.error("Prediction error:", error);
+    // Log more detailed error information
+    if (error.stack) {
+      console.error("Error stack:", error.stack);
+    }
+    throw error;
   }
 }
 

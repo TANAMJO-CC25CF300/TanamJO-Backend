@@ -1,7 +1,7 @@
 const routes = (handler) => [
   {
     method: "POST",
-    path: "/predict",
+    path: "/predicts",
     handler: handler.getPredictResult,
     options: {
       payload: {
