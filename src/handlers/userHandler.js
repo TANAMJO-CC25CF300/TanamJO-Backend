@@ -3,6 +3,14 @@ const { userUpdateSchema } = require('../validations/userValidation');
 const bcrypt = require('bcrypt');
 
 class UserHandler {
+  constructor() {
+    this.getAllUsersHandler = this.getAllUsersHandler.bind(this);
+    this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
+    this.updateUserHandler = this.updateUserHandler.bind(this);
+    this.updatePasswordHandler = this.updatePasswordHandler.bind(this);
+    this.updateUserLevelHandler = this.updateUserLevelHandler.bind(this);
+  }
+
   async getAllUsersHandler(request, h) {
     try {
       const result = await pool.query(
@@ -30,6 +38,9 @@ class UserHandler {
     try {
       const { id } = request.params;
       console.log('Fetching user with ID:', id);
+      
+      // First update the user's level based on their points
+      await this.updateUserLevelHandler({ params: { id } }, h);
       
       const result = await pool.query(
         'SELECT u.id, u.name, u.email, u.gender, u.poin, u.user_level_id, ul.name as level_name, ul.minimum_poin FROM "user" u JOIN user_level ul ON u.user_level_id = ul.id WHERE u.id = $1',
@@ -148,6 +159,71 @@ class UserHandler {
       return h.response({
         status: 'fail',
         message: 'Error updating password',
+        error: error.message,
+        detail: error.detail,
+      }).code(500);
+    }
+  }
+
+  async updateUserLevelHandler(request, h) {
+    try {
+      const { id } = request.params;
+      
+      // Get user's current points
+      const userResult = await pool.query(
+        'SELECT poin FROM "user" WHERE id = $1',
+        [id]
+      );
+
+      if (userResult.rows.length === 0) {
+        return h.response({
+          status: 'fail',
+          message: 'User not found',
+        }).code(404);
+      }
+
+      const userPoints = userResult.rows[0].poin;
+
+      // Find the appropriate level based on points
+      const levelResult = await pool.query(
+        'SELECT id, name, minimum_poin FROM user_level WHERE minimum_poin <= $1 ORDER BY minimum_poin DESC LIMIT 1',
+        [userPoints]
+      );
+
+      if (levelResult.rows.length > 0) {
+        const newLevel = levelResult.rows[0];
+        
+        // Update user's level
+        await pool.query(
+          'UPDATE "user" SET user_level_id = $1 WHERE id = $2',
+          [newLevel.id, id]
+        );
+
+        return h.response({
+          status: 'success',
+          message: 'User level updated successfully',
+          data: {
+            user_id: id,
+            points: userPoints,
+            new_level: {
+              id: newLevel.id,
+              name: newLevel.name,
+              minimum_points: newLevel.minimum_poin
+            }
+          }
+        }).code(200);
+      }
+
+      return h.response({
+        status: 'fail',
+        message: 'No appropriate level found for the user\'s points',
+      }).code(400);
+
+    } catch (error) {
+      console.error('Error updating user level:', error);
+      return h.response({
+        status: 'fail',
+        message: 'Error updating user level',
         error: error.message,
         detail: error.detail,
       }).code(500);
