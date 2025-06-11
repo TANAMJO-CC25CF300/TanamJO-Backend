@@ -11,16 +11,27 @@ class AuthHandler {
 
     try {
       const newUser = await this._service.register(email, password);
+
       return h.response({
+        status: 'success',
         message: 'User berhasil terdaftar.',
-        user: newUser,
+        data: {
+          user: newUser,
+        },
       }).code(201);
     } catch (err) {
       if (err.message === 'EMAIL_EXISTS') {
-        return h.response({ message: 'Email sudah terdaftar.' }).code(400);
+        return h.response({
+          status: 'fail',
+          message: 'Email sudah terdaftar.',
+        }).code(400);
       }
-      console.error(err);
-      return h.response({ message: 'Terjadi kesalahan pada server.' }).code(500);
+
+      console.error('[Signup Error]', err);
+      return h.response({
+        status: 'error',
+        message: 'Terjadi kesalahan pada server.',
+      }).code(500);
     }
   }
 
@@ -29,20 +40,35 @@ class AuthHandler {
 
     try {
       const result = await this._service.login(email, password);
+
       return h.response({
+        status: 'success',
         message: 'Login berhasil.',
-        token: result.token,
-        user: result.user,
+        data: {
+          token: result.token,
+          user: result.user,
+        },
       }).code(200);
     } catch (err) {
       if (err.message === 'EMAIL_NOT_FOUND') {
-        return h.response({ message: 'Email tidak ditemukan.' }).code(404);
+        return h.response({
+          status: 'fail',
+          message: 'Email tidak ditemukan.',
+        }).code(404);
       }
+
       if (err.message === 'INVALID_PASSWORD') {
-        return h.response({ message: 'Password salah.' }).code(401);
+        return h.response({
+          status: 'fail',
+          message: 'Password salah.',
+        }).code(401);
       }
-      console.error(err);
-      return h.response({ message: 'Terjadi kesalahan saat login.' }).code(500);
+
+      console.error('[Login Error]', err);
+      return h.response({
+        status: 'error',
+        message: 'Terjadi kesalahan saat login.',
+      }).code(500);
     }
   }
 }
