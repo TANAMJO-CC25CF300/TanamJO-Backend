@@ -1,9 +1,13 @@
 const PredictHandler = require('./handlers/predictHandler');
-const predictRoutes = require('./routes/PredictRoutes');
+const predictRoutes = require('./routes/predictRoutes');
 
 const AuthRoutes = require('./routes/authRoutes');
 const AuthService = require('./services/authService');
 const AuthHandler = require('./handlers/authHandler');
+
+const PlantRoutes = require('./routes/plantRoutes');
+const PlantService = require('./services/plantService');
+const PlantHandler = require('./handlers/plantHandler');
 
 const AuthPlugin = {
   name: 'auth',
@@ -24,4 +28,18 @@ const PredictPlugin = {
   },
 };
 
-module.exports = { AuthPlugin, PredictPlugin };
+const PlantPlugin = {
+  name: 'plants',
+  version: '1.0.0',
+  register: async (server) => {
+    const plantService = new PlantService();
+    const plantHandler = new PlantHandler(plantService);
+    server.route(PlantRoutes(plantHandler));
+  },
+};
+
+module.exports = {
+  AuthPlugin,
+  PredictPlugin,
+  PlantPlugin,
+};

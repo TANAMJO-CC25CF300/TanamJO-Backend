@@ -1,47 +1,55 @@
-require("dotenv").config();
 const Hapi = require("@hapi/hapi");
+const Jwt = require("@hapi/jwt");
+require("dotenv").config();
 
-const { AuthPlugin, PredictPlugin } = require("./src"); // Ambil dua plugin
+const { AuthPlugin, PredictPlugin, PlantPlugin } = require("./src");
 const PredictService = require("./src/services/predictService");
-
-const AuthRoutes = require("./src/routes/authRoutes");
 const AuthService = require("./src/services/authService");
-const AuthHandler = require("./src/handlers/authHandler");
 
 const init = async () => {
   const server = Hapi.server({
-    port: process.env.PORT,
+    port: process.env.PORT || 3000,
     host: "localhost",
     routes: {
-      cors: {
-        origin: ["*"], // sesuaikan jika perlu
-      },
+      cors: { origin: ["*"] },
     },
   });
 
-  // Inisialisasi service
-  const predictService = new PredictService();
-  const authService = new AuthService();
-  const authHandler = new AuthHandler(authService);
+  await server.register(Jwt); // ✅ Daftar plugin jwt
 
-  // server.route(AuthRoutes(authHandler));
-
-  // Register plugin predicts (model image prediction)
-  await server.register([
-  {
-    plugin: PredictPlugin,
-    options: {
-      service: predictService,
+  // ✅ Strategi auth jwt
+  server.auth.strategy('jwt', 'jwt', {
+    keys: process.env.JWT_SECRET,
+    verify: {
+      aud: false,
+      iss: false,
+      sub: false,
+      // maxAgeSec: 86400,
     },
-  },
-  {
-    plugin: AuthPlugin,
-  },
-]);
+    validate: (artifacts, request, h) => {
+      return {
+        isValid: true,
+        credentials: { userId: artifacts.decoded.payload.userId },
+      };
+    },
+  });
 
+  // Tidak wajib default, tapi bisa:
+  // server.auth.default('jwt');
+
+  const predictService = new PredictService();
+
+  await server.register([
+    {
+      plugin: PredictPlugin,
+      options: { service: predictService },
+    },
+    { plugin: AuthPlugin },
+    { plugin: PlantPlugin },
+  ]);
 
   await server.start();
-  console.log("Server running on", server.info.uri);
+  console.log("✅ Server running on", server.info.uri);
 };
 
 init();
