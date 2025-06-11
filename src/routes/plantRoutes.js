@@ -4,7 +4,10 @@ const routes = (handler) => [
     path: '/plants',
     handler: handler.postPlantHandler,
     options: {
-      auth: 'jwt', // Sesuaikan jika kamu memakai strategi autentikasi bernama lain
+      auth: 'jwt',
+      tags: ['api'],
+      description: 'Menambahkan data tanaman baru',
+      notes: 'Mengirimkan name, ageInput, description, dan phase. Token JWT wajib.',
     },
   },
   {
@@ -13,6 +16,9 @@ const routes = (handler) => [
     handler: handler.getUserPlantsHandler,
     options: {
       auth: 'jwt',
+      tags: ['api'],
+      description: 'Mengambil data semua tanaman user',
+      notes: 'Mengembalikan data tanaman dan deskripsi terbaru berdasarkan plant_age.',
     },
   },
 ];

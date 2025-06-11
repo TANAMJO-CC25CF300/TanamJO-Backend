@@ -1,11 +1,10 @@
 const bcrypt = require('bcrypt');
-const jwt = require('jsonwebtoken');
+const Jwt = require('@hapi/jwt');
 const { pool } = require('../config/db');
 require('dotenv').config();
 
 class AuthService {
   async register(email, password) {
-    // Perbaikan: pakai "user" dengan tanda kutip
     const checkUser = await pool.query(
       'SELECT * FROM "user" WHERE email = $1',
       [email]
@@ -22,18 +21,16 @@ class AuthService {
       [email, hashedPassword]
     );
 
-    return result.rows[0]; // return { id, email }
+    return result.rows[0];
   }
 
   async login(email, password) {
-    // Perbaikan: pakai "user" dengan tanda kutip
     const result = await pool.query(
       'SELECT * FROM "user" WHERE email = $1',
       [email]
     );
 
     const user = result.rows[0];
-
     if (!user) {
       throw new Error('EMAIL_NOT_FOUND');
     }
@@ -43,10 +40,16 @@ class AuthService {
       throw new Error('INVALID_PASSWORD');
     }
 
-    const token = jwt.sign(
-      { id: user.id, email: user.email },
-      process.env.JWT_SECRET,
-      { expiresIn: '1d' }
+    // GUNAKAN JWT DARI @hapi/jwt
+    const token = Jwt.token.generate(
+      {
+        userId: user.id,
+        email: user.email
+      },
+      {
+        key: process.env.JWT_SECRET,
+        algorithm: 'HS256'
+      }
     );
 
     return {

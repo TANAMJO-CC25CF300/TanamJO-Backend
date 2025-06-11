@@ -2,50 +2,37 @@ const Hapi = require("@hapi/hapi");
 const Jwt = require("@hapi/jwt");
 require("dotenv").config();
 
-const { AuthPlugin, PredictPlugin, PlantPlugin } = require("./src");
+const { AuthPlugin, PredictPlugin, PlantPlugin, CheckinPlugin } = require("./src");
 const PredictService = require("./src/services/predictService");
-const AuthService = require("./src/services/authService");
 
 const init = async () => {
   const server = Hapi.server({
     port: process.env.PORT || 3000,
     host: "localhost",
-    routes: {
-      cors: { origin: ["*"] },
-    },
+    routes: { cors: { origin: ["*"] } },
   });
 
-  await server.register(Jwt); // ✅ Daftar plugin jwt
+  await server.register(Jwt);
 
-  // ✅ Strategi auth jwt
-  server.auth.strategy('jwt', 'jwt', {
+  server.auth.strategy("jwt", "jwt", {
     keys: process.env.JWT_SECRET,
-    verify: {
-      aud: false,
-      iss: false,
-      sub: false,
-      // maxAgeSec: 86400,
-    },
+    verify: { aud: false, iss: false, sub: false },
     validate: (artifacts, request, h) => {
-      return {
-        isValid: true,
-        credentials: { userId: artifacts.decoded.payload.userId },
-      };
+      const userId = artifacts.decoded.payload.userId;
+      if (!userId) return { isValid: false, credentials: {} };
+      return { isValid: true, credentials: { userId } };
     },
   });
 
-  // Tidak wajib default, tapi bisa:
-  // server.auth.default('jwt');
+  server.auth.default("jwt");
 
   const predictService = new PredictService();
 
   await server.register([
-    {
-      plugin: PredictPlugin,
-      options: { service: predictService },
-    },
     { plugin: AuthPlugin },
     { plugin: PlantPlugin },
+    { plugin: PredictPlugin, options: { service: predictService } },
+    { plugin: CheckinPlugin },
   ]);
 
   await server.start();

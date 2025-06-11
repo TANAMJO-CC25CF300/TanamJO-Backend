@@ -1,34 +1,44 @@
 const { pool } = require('../config/db');
 
 class PlantService {
-  // Konversi umur tanaman dari format '2 DSS' / '15 DAP' menjadi integer plant_age
   convertPlantAge(input) {
-    if (typeof input !== 'string') {
-    throw new Error('ageInput harus berupa string, misal "2 DAP"');
+    if (typeof input !== 'string' || !input.includes(' ')) {
+      throw new Error('ageInput harus berupa string, misalnya: "2 DAP" atau "3 DSS".');
     }
 
-    const [valueStr, unit] = input.split(' ');
+    const [valueStr, unit] = input.trim().split(' ');
     const value = parseInt(valueStr);
 
-    if (unit === 'DSS') return value - 8; // 2 DSS = -6
-    if (unit === 'DAP') return value;     // 15 DAP = 15
-    return null;
+    if (isNaN(value)) {
+      throw new Error('Nilai umur tidak valid, harus berupa angka.');
+    }
+
+    if (unit === 'DSS') return value - 8;
+    if (unit === 'DAP') return value;
+
+    throw new Error('Unit umur tanaman tidak valid. Gunakan "DSS" atau "DAP".');
   }
 
-  // Menentukan fase berdasarkan umur tanaman
   determinePhase(age) {
     if (age >= -7 && age <= 0) return 'preparation';
     if (age >= 1 && age <= 21) return 'seeding';
     if (age >= 22 && age <= 24) return 'transplanting';
     if (age >= 25 && age <= 55) return 'vegetative';
     if (age >= 56 && age <= 90) return 'generative';
-    return null;
+    throw new Error('Umur tanaman di luar rentang yang diizinkan (-7 s/d 90 hari).');
   }
 
-  // POST: Tambah tanaman baru + description awal
-  async postPlant(userId, name, ageInput, descriptionText) {
+  async postPlant(userId, name, ageInput, descriptionText, userPhase) {
     const plantAge = this.convertPlantAge(ageInput);
-    const phase = this.determinePhase(plantAge);
+    const phase = userPhase || this.determinePhase(plantAge);
+
+    if (!userId) {
+      throw new Error('User ID tidak ditemukan dari token.');
+    }
+
+    if (!descriptionText || descriptionText.trim() === '') {
+      throw new Error('Deskripsi tanaman tidak boleh kosong.');
+    }
 
     try {
       const plantRes = await pool.query(
@@ -40,19 +50,18 @@ class PlantService {
       const plantId = plantRes.rows[0].id;
 
       await pool.query(
-        `INSERT INTO description (plant_id, phase, plant_age, content, source, created_at)
-         VALUES ($1, $2, $3, $4, 'user', NOW())`,
+        `INSERT INTO description (plant_id, phase, plant_age, content, created_at)
+         VALUES ($1, $2, $3, $4, NOW())`,
         [plantId, phase, plantAge, descriptionText]
       );
 
       return { plantId };
     } catch (err) {
-      console.error('Error postPlant:', err);
+      console.error('[POST Plant Error]', err);
       throw new Error('FAILED_TO_POST_PLANT');
     }
   }
 
-  // GET: Ambil semua tanaman milik user + deskripsi sesuai usia tanaman terakhir
   async getUserPlants(userId) {
     try {
       const plantRes = await pool.query(
@@ -72,13 +81,13 @@ class PlantService {
 
         results.push({
           ...plant,
-          description: descRes.rows[0]?.content || null
+          description: descRes.rows[0]?.content || null,
         });
       }
 
       return results;
     } catch (err) {
-      console.error('Error getUserPlants:', err);
+      console.error('[GET Plant Error]', err);
       throw new Error('FAILED_TO_GET_PLANTS');
     }
   }
