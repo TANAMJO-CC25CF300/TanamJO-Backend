@@ -57,6 +57,89 @@ class UserHandler {
       }).code(500);
     }
   }
+
+  async updateUserHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const { name, email, gender } = request.payload;
+
+      const result = await pool.query(
+        'UPDATE "user" SET name = $1, email = $2, gender = $3 WHERE id = $4 RETURNING id, name, email, gender',
+        [name, email, gender, id]
+      );
+
+      if (result.rows.length === 0) {
+        return h.response({
+          status: 'fail',
+          message: 'User not found',
+        }).code(404);
+      }
+
+      return h.response({
+        status: 'success',
+        message: 'User updated successfully',
+        data: {
+          user: result.rows[0],
+        },
+      }).code(200);
+    } catch (error) {
+      console.error('Error updating user:', error);
+      return h.response({
+        status: 'fail',
+        message: 'Error updating user',
+        error: error.message,
+        detail: error.detail,
+      }).code(500);
+    }
+  }
+
+  async updatePasswordHandler(request, h) {
+    try {
+      const { id } = request.params;
+      const { oldPassword, newPassword } = request.payload;
+
+      // First verify the old password
+      const user = await pool.query(
+        'SELECT password FROM "user" WHERE id = $1',
+        [id]
+      );
+
+      if (user.rows.length === 0) {
+        return h.response({
+          status: 'fail',
+          message: 'User not found',
+        }).code(404);
+      }
+
+      // Here you should add password hashing and comparison
+      // This is a simplified version - you should use bcrypt or similar
+      if (user.rows[0].password !== oldPassword) {
+        return h.response({
+          status: 'fail',
+          message: 'Current password is incorrect',
+        }).code(400);
+      }
+
+      // Update with new password
+      await pool.query(
+        'UPDATE "user" SET password = $1 WHERE id = $2',
+        [newPassword, id]
+      );
+
+      return h.response({
+        status: 'success',
+        message: 'Password updated successfully',
+      }).code(200);
+    } catch (error) {
+      console.error('Error updating password:', error);
+      return h.response({
+        status: 'fail',
+        message: 'Error updating password',
+        error: error.message,
+        detail: error.detail,
+      }).code(500);
+    }
+  }
 }
 
 module.exports = UserHandler; 
