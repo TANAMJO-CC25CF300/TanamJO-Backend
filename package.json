@@ -1,6 +1,7 @@
 {
   "name": "tanamjo-backend",
   "version": "1.0.0",
+  "description": "",
   "main": "index.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
@@ -19,14 +20,17 @@
   "dependencies": {
     "@hapi/hapi": "^21.4.0",
     "@hapi/joi": "^17.1.1",
+    "@hapi/jwt": "^3.2.0",
     "@supabase/supabase-js": "^2.50.0",
     "@tensorflow/tfjs": "^4.22.0",
     "bcrypt": "^6.0.0",
     "dotenv": "^16.5.0",
     "jsonwebtoken": "^9.0.2",
-    "nodemon": "^3.1.0",
+    "nodemon": "^3.1.10",
     "pg": "^8.16.0",
     "supabase": "^2.24.3"
   },
-  "description": ""
+  "engines": {
+    "node": ">=16"
+  }
 }

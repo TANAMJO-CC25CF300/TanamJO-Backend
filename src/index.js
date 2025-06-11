@@ -1,5 +1,6 @@
 const PredictHandler = require('./handlers/predictHandler');
-const predictRoutes = require('./routes/PredictRoutes');
+const predictRoutes = require('./routes/predictRoutes');
+const PredictService = require('./services/predictService');
 
 const AuthRoutes = require('./routes/authRoutes');
 const AuthService = require('./services/authService');
@@ -7,6 +8,14 @@ const AuthHandler = require('./handlers/authHandler');
 
 const UserRoutes = require('./routes/userRoutes');
 const UserHandler = require('./handlers/userHandler');
+
+const PlantRoutes = require('./routes/plantRoutes');
+const PlantService = require('./services/plantService');
+const PlantHandler = require('./handlers/plantHandler');
+
+const CheckinRoutes = require('./routes/checkinRoutes');
+const CheckinService = require('./services/checkinService');
+const CheckinHandler = require('./handlers/checkinHandler');
 
 const AuthPlugin = {
   name: 'auth',
@@ -36,4 +45,30 @@ const PredictPlugin = {
   },
 };
 
-module.exports = { AuthPlugin, PredictPlugin, UserPlugin };
+const PlantPlugin = {
+  name: 'plants',
+  version: '1.0.0',
+  register: async (server) => {
+    const plantService = new PlantService();
+    const plantHandler = new PlantHandler(plantService);
+    server.route(PlantRoutes(plantHandler));
+  },
+};
+
+const CheckinPlugin = {
+  name: 'checkin',
+  version: '1.0.0',
+  register: async (server) => {
+    const checkinService = new CheckinService();
+    const checkinHandler = new CheckinHandler(checkinService);
+    server.route(CheckinRoutes(checkinHandler));
+  },
+};
+
+module.exports = {
+  AuthPlugin,
+  PredictPlugin,
+  UserPlugin,
+  PlantPlugin,
+  CheckinPlugin,
+};
