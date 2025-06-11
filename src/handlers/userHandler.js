@@ -1,5 +1,6 @@
 const { pool } = require('../config/db');
 const { userUpdateSchema } = require('../validations/userValidation');
+const bcrypt = require('bcrypt');
 
 class UserHandler {
   async getAllUsersHandler(request, h) {
@@ -122,19 +123,20 @@ class UserHandler {
         }).code(404);
       }
 
-      // Here you should add password hashing and comparison
-      // This is a simplified version - you should use bcrypt or similar
-      if (user.rows[0].password !== oldPassword) {
+      // Verify the old password - compare plain text with stored hash
+      const isPasswordValid = await bcrypt.compare(oldPassword, user.rows[0].password);
+      if (!isPasswordValid) {
         return h.response({
           status: 'fail',
           message: 'Current password is incorrect',
         }).code(400);
       }
 
-      // Update with new password
+      // Hash the new password and update
+      const hashedNewPassword = await bcrypt.hash(newPassword, 10);
       await pool.query(
         'UPDATE "user" SET password = $1 WHERE id = $2',
-        [newPassword, id]
+        [hashedNewPassword, id]
       );
 
       return h.response({
