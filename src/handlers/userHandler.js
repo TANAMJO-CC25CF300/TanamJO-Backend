@@ -1,4 +1,5 @@
 const { pool } = require('../config/db');
+const { userUpdateSchema } = require('../validations/userValidation');
 
 class UserHandler {
   async getAllUsersHandler(request, h) {
@@ -62,6 +63,16 @@ class UserHandler {
     try {
       const { id } = request.params;
       const { name, email, gender } = request.payload;
+
+      // Validate input
+      const { error } = userUpdateSchema.validate({ name, email, gender });
+      if (error) {
+        return h.response({
+          status: 'fail',
+          message: 'Validation error',
+          error: error.details[0].message
+        }).code(400);
+      }
 
       const result = await pool.query(
         'UPDATE "user" SET name = $1, email = $2, gender = $3 WHERE id = $4 RETURNING id, name, email, gender',
