@@ -1,31 +1,35 @@
-const { pool } = require('../config/db');
+const { pool } = require("../config/db");
 
 class PlantService {
   convertPlantAge(input) {
-    if (typeof input !== 'string' || !input.includes(' ')) {
-      throw new Error('ageInput harus berupa string, misalnya: "2 DAP" atau "3 DSS".');
+    if (typeof input !== "string" || !input.includes(" ")) {
+      throw new Error(
+        'ageInput harus berupa string, misalnya: "2 DAP" atau "3 DSS".'
+      );
     }
 
-    const [valueStr, unit] = input.trim().split(' ');
+    const [valueStr, unit] = input.trim().split(" ");
     const value = parseInt(valueStr);
 
     if (isNaN(value)) {
-      throw new Error('Nilai umur tidak valid, harus berupa angka.');
+      throw new Error("Nilai umur tidak valid, harus berupa angka.");
     }
 
-    if (unit === 'DSS') return value - 8;
-    if (unit === 'DAP') return value;
+    if (unit === "DSS") return value - 8;
+    if (unit === "DAP") return value;
 
     throw new Error('Unit umur tanaman tidak valid. Gunakan "DSS" atau "DAP".');
   }
 
   determinePhase(age) {
-    if (age >= -7 && age <= 0) return 'preparation';
-    if (age >= 1 && age <= 21) return 'seeding';
-    if (age >= 22 && age <= 24) return 'transplanting';
-    if (age >= 25 && age <= 55) return 'vegetative';
-    if (age >= 56 && age <= 90) return 'generative';
-    throw new Error('Umur tanaman di luar rentang yang diizinkan (-7 s/d 90 hari).');
+    if (age >= -7 && age <= 0) return "preparation";
+    if (age >= 1 && age <= 21) return "seeding";
+    if (age >= 22 && age <= 24) return "transplanting";
+    if (age >= 25 && age <= 55) return "vegetative";
+    if (age >= 56 && age <= 90) return "generative";
+    throw new Error(
+      "Umur tanaman di luar rentang yang diizinkan (-7 s/d 90 hari)."
+    );
   }
 
   async postPlant(userId, name, ageInput, descriptionText, userPhase) {
@@ -33,11 +37,11 @@ class PlantService {
     const phase = userPhase || this.determinePhase(plantAge);
 
     if (!userId) {
-      throw new Error('User ID tidak ditemukan dari token.');
+      throw new Error("User ID tidak ditemukan dari token.");
     }
 
-    if (!descriptionText || descriptionText.trim() === '') {
-      throw new Error('Deskripsi tanaman tidak boleh kosong.');
+    if (!descriptionText || descriptionText.trim() === "") {
+      throw new Error("Deskripsi tanaman tidak boleh kosong.");
     }
 
     try {
@@ -57,8 +61,8 @@ class PlantService {
 
       return { plantId };
     } catch (err) {
-      console.error('[POST Plant Error]', err);
-      throw new Error('FAILED_TO_POST_PLANT');
+      console.error("[POST Plant Error]", err);
+      throw new Error("FAILED_TO_POST_PLANT");
     }
   }
 
@@ -87,14 +91,16 @@ class PlantService {
 
       return results;
     } catch (err) {
-      console.error('[GET Plant Error]', err);
-      throw new Error('FAILED_TO_GET_PLANTS');
+      console.error("[GET Plant Error]", err);
+      throw new Error("FAILED_TO_GET_PLANTS");
     }
   }
 
   async updatePlantAges() {
     try {
-      const { rows: plants } = await pool.query('SELECT id, plant_age FROM plant');
+      const { rows: plants } = await pool.query(
+        "SELECT id, plant_age FROM plant"
+      );
 
       for (const plant of plants) {
         const newAge = plant.plant_age + 1;
@@ -110,11 +116,10 @@ class PlantService {
 
       console.log(`[AUTO UPDATE] plant_age semua tanaman berhasil diperbarui.`);
     } catch (err) {
-      console.error('[AUTO UPDATE ERROR]', err);
-      throw new Error('FAILED_TO_AUTO_UPDATE_PLANTS');
+      console.error("[AUTO UPDATE ERROR]", err);
+      throw new Error("FAILED_TO_AUTO_UPDATE_PLANTS");
     }
   }
-
 }
 
 module.exports = PlantService;
