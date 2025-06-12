@@ -91,6 +91,30 @@ class PlantService {
       throw new Error('FAILED_TO_GET_PLANTS');
     }
   }
+
+  async updatePlantAges() {
+    try {
+      const { rows: plants } = await pool.query('SELECT id, plant_age FROM plant');
+
+      for (const plant of plants) {
+        const newAge = plant.plant_age + 1;
+        const newPhase = this.determinePhase(newAge);
+
+        await pool.query(
+          `UPDATE plant
+           SET plant_age = $1, phase = $2, updated_at = NOW()
+           WHERE id = $3`,
+          [newAge, newPhase, plant.id]
+        );
+      }
+
+      console.log(`[AUTO UPDATE] plant_age semua tanaman berhasil diperbarui.`);
+    } catch (err) {
+      console.error('[AUTO UPDATE ERROR]', err);
+      throw new Error('FAILED_TO_AUTO_UPDATE_PLANTS');
+    }
+  }
+
 }
 
 module.exports = PlantService;

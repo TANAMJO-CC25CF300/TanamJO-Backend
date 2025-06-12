@@ -48,6 +48,16 @@ const init = async () => {
 
   await server.start();
   console.log("✅ Server running on", server.info.uri);
+
+  const cron = require('node-cron');
+  const PlantService = require('./src/services/plantService');
+  const plantService = new PlantService();
+
+  cron.schedule('0 0 * * *', async () => {
+    console.log('[CRON] Menjalankan pembaruan usia tanaman...');
+    await plantService.updatePlantAges();
+  });
+
 };
 
 init();
