@@ -1,14 +1,18 @@
 const routes = (handler) => [
   {
     method: "POST",
-    path: "/predict",
+    path: "/predicts",
     handler: handler.getPredictResult,
     options: {
+      auth: false,
       payload: {
-        allow: "multipart/form-data",
-        multipart: true,
+        maxBytes: 5242880, // 5MB
         output: "stream",
+        parse: true,
+        multipart: true,
       },
+      description: "Predict plant disease from image",
+      tags: ["api", "predict"],
     },
   },
 ];

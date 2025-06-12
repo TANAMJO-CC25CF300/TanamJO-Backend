@@ -2,11 +2,18 @@ require("dotenv").config();
 const Hapi = require("@hapi/hapi");
 const Jwt = require("@hapi/jwt");
 
-const { AuthPlugin, PredictPlugin, UserPlugin, PlantPlugin, CheckinPlugin } = require("./src");
+const {
+  AuthPlugin,
+  PredictPlugin,
+  UserPlugin,
+  PlantPlugin,
+  CheckinPlugin,
+} = require("./src");
 
 const PredictService = require("./src/services/predictService");
 const AuthService = require("./src/services/authService");
 const AuthHandler = require("./src/handlers/authHandler");
+const predict = require("./src/index");
 
 const init = async () => {
   const server = Hapi.server({
