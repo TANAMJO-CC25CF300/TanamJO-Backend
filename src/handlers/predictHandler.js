@@ -6,7 +6,6 @@ class PredictHandler {
 
   async getPredictResult(request, h) {
     try {
-      console.log(request.payload);
       const image = request.payload.image;
 
       if (!image) {
@@ -30,13 +29,13 @@ class PredictHandler {
         },
       });
     } catch (error) {
+      console.error("Prediction error:", error);
       return h
         .response({
           status: "error",
           message: error.message,
         })
         .code(500);
-      console.log(error);
     }
   }
 }
