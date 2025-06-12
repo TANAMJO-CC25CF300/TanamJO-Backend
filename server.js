@@ -56,15 +56,24 @@ const init = async () => {
   await server.start();
   console.log("✅ Server running on", server.info.uri);
 
-  const cron = require('node-cron');
-  const PlantService = require('./src/services/plantService');
+  const cron = require("node-cron");
+  const PlantService = require("./src/services/plantService");
   const plantService = new PlantService();
 
-  cron.schedule('0 0 * * *', async () => {
-    console.log('[CRON] Menjalankan pembaruan usia tanaman...');
-    await plantService.updatePlantAges();
+  cron.schedule("0 0 * * *", async () => {
+    console.log(
+      "[CRON] Starting plant age update at:",
+      new Date().toISOString()
+    );
+    try {
+      await plantService.updatePlantAges();
+      console.log("[CRON] Plant age update completed successfully");
+    } catch (error) {
+      console.error("[CRON] Error updating plant ages:", error);
+    }
   });
 
+  console.log("[CRON] Plant age update scheduler initialized");
 };
 
 init();
