@@ -1,14 +1,17 @@
 const { pool } = require("../config/db");
 const { userUpdateSchema } = require("../validations/userValidation");
 const bcrypt = require("bcrypt");
+const UserService = require("../services/userService");
 
 class UserHandler {
   constructor() {
+    this.userService = new UserService();
     this.getAllUsersHandler = this.getAllUsersHandler.bind(this);
     this.getUserByIdHandler = this.getUserByIdHandler.bind(this);
     this.updateUserHandler = this.updateUserHandler.bind(this);
     this.updatePasswordHandler = this.updatePasswordHandler.bind(this);
     this.updateUserLevelHandler = this.updateUserLevelHandler.bind(this);
+    this.updateUserPointsHandler = this.updateUserPointsHandler.bind(this);
   }
 
   async getAllUsersHandler(request, h) {
@@ -270,7 +273,7 @@ class UserHandler {
       const { id } = request.params;
       console.log(`[HAPI] Received request to update points for user: ${id}`);
       // Call the UserService method to recalculate and update points
-      await userService.updateUserPoints(id);
+      await this.userService.updateUserPoints(id);
 
       return h
         .response({
