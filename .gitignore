@@ -12,6 +12,10 @@ logs/
 #env
 .env
 .env.local
+.env.development
+.env.production
+.env.test
+
 # Operating system files
 .DS_Store
 Thumbs.db

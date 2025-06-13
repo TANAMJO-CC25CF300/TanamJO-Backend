@@ -59,6 +59,7 @@ class PredictService {
         console.error("Error stack:", error.stack);
       }
       throw new Error(`Prediction failed: ${error.message}`);
+      console.log("Prediction failed:", error);
     }
   }
 }
