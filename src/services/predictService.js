@@ -1,10 +1,15 @@
-const tf = require("@tensorflow/tfjs");
+const tf = require("@tensorflow/tfjs-node");
+const path = require("path");
 
 class PredictService {
   async predictImage(photo) {
     try {
-      const modelPath = "file://model/model.json";
-      const model = await tf.loadGraphModel(modelPath);
+      // Use path.join for cross-platform compatibility
+      const modelPath = path.join(__dirname, "../../model/model.json");
+      console.log("Loading model from:", modelPath);
+
+      const model = await tf.loadGraphModel(`file://${modelPath}`);
+      console.log("Model loaded successfully");
 
       let imageBuffer;
       if (photo && photo._data) {
@@ -19,6 +24,7 @@ class PredictService {
         imageBuffer = Buffer.concat(buffers);
       }
 
+      console.log("Processing image...");
       const tensor = tf.tidy(() => {
         const decodedImage = tf.node.decodeImage(imageBuffer, 3);
         const resizedImage = tf.image.resizeBilinear(decodedImage, [224, 224]);
@@ -26,6 +32,7 @@ class PredictService {
         return expandedImage.div(255.0);
       });
 
+      console.log("Making prediction...");
       const predict = await model.executeAsync(tensor);
       const outputTensor = Array.isArray(predict) ? predict[0] : predict;
       const score = await outputTensor.data();
@@ -56,7 +63,7 @@ class PredictService {
       if (error.stack) {
         console.error("Error stack:", error.stack);
       }
-      throw error;
+      throw new Error(`Prediction failed: ${error.message}`);
     }
   }
 }
