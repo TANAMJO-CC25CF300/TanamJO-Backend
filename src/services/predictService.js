@@ -5,12 +5,8 @@ class PredictService {
   async predictImage(photo) {
     try {
       // Use path.join for cross-platform compatibility
-      const modelPath = path.join(__dirname, "../../model/model.json");
-      console.log("Loading model from:", modelPath);
-
-      const model = await tf.loadGraphModel(`file://${modelPath}`);
-      console.log("Model loaded successfully");
-
+      const modelPath = "file://model/model.json";
+      const model = await tf.loadGraphModel(modelPath);
       let imageBuffer;
       if (photo && photo._data) {
         imageBuffer = photo._data;
